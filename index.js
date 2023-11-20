@@ -1,5 +1,8 @@
+const search = require('./search')
+
 function miFuncion() {
-    console.log("Hola mundo!!!")
+    const query = 'Node.js tutorial';
+    search.buscarEnGoogle(query);
 }
   
 module.exports = { miFuncion };
