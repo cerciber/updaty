@@ -1,8 +1,10 @@
-const search = require('./search')
+// const search = require('./search')
+const { getChatGPTResponse } = require('./chatGpt')
 
-function miFuncion() {
-    const query = 'Node.js tutorial';
-    search.buscarEnGoogle(query);
+async function miFuncion() {
+    const response = await getChatGPTResponse('10 nombres de gatitos.')
+    console.log(response)
 }
+miFuncion()
   
 module.exports = { miFuncion };
