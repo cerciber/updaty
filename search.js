@@ -2,32 +2,51 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const { convert } = require('html-to-text');
 
-async function searchOnGoogle(query) {
+const cahractersLimit = 10000
+
+async function searchOnGoogle(query, numeroDeEnlaces) {
+  console.log("Searching on google...")
   try {
-    const resultados = [];
+    let resultados = [];
 
     // Obtener los enlaces de los resultados de búsqueda
     const enlaces = await obtenerEnlaces(query);
-
-    // Obtener el contenido de cada enlace
-    for (let i = 0; i < enlaces.length && i < 5; i++) {
-      const enlace = enlaces[i];
-      const respuesta = await axios.get(enlace);
-
-      const $ = cheerio.load(respuesta.data);
-      const contenidoPagina = $('body').html(); // Obtener todo el HTML del cuerpo de la página
-      const textoLimpio = convert(contenidoPagina, { wordwrap: false });
-      
-      // console.log(textoLimpio)
-      resultados.push(textoLimpio);
+    let cont = 0
+    for (const enlace of enlaces) {
+      try {
+        const respuesta = await axios.get(enlace);
+        const $ = cheerio.load(respuesta.data);
+        let contenidoPagina = $('main');
+        let textoLimpio = ""
+        contenidoPagina.each((index, element) => {
+          textoLimpio = textoLimpio.concat(convert(contenidoPagina.html(), { wordwrap: false }))
+        });
+        const resultado = textoLimpio.substring(0, cahractersLimit);
+        if (resultado.trim() !== '') {
+          resultados.push(resultado)
+          console.log("  - Information getted from: " + enlace)
+          cont++
+          if (cont >= numeroDeEnlaces) {
+            break
+          }
+        } else {
+          console.log("  - Can't get info from: " + enlace)
+        }
+      } catch (error) {
+        console.log("  - Can't get info from: " + enlace)
+      }
     }
 
-    console.log('Contenido de las páginas de búsqueda:');
-    resultados.forEach((contenido, index) => {
-      console.log(`Contenido de la página ${index + 1}:\n${contenido}\n\n`);
-    });
+    return {
+      sucess: true,
+      message: resultados
+    }
+
   } catch (error) {
-    console.error('Error al realizar la búsqueda:', error.message);
+    return {
+        sucess: false,
+        message: 'Error connecting searching on Google'
+    }
   }
 }
 
@@ -37,6 +56,7 @@ async function obtenerEnlaces(query) {
   const enlaces = [];
 
   // Extraer enlaces de los resultados de búsqueda
+  const a = $('a')
   $('a').each((index, elemento) => {
     const href = $(elemento).attr('href');
     if (href && href.startsWith('/url?q=')) {
@@ -48,7 +68,6 @@ async function obtenerEnlaces(query) {
 
 function limpiarUrl(url) {
     return decodeURIComponent(url.replace(/\&.*/, ''));
-  }
+}
 
-const query = '40000 dolares a pesos colombianos';
-searchOnGoogle(query);
+module.exports = { searchOnGoogle }
