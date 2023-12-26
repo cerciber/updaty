@@ -2,9 +2,7 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const { convert } = require('html-to-text');
 
-const cahractersLimit = 10000
-
-async function searchOnGoogle(query, numeroDeEnlaces) {
+async function searchOnGoogle(query, markups, numeroDeEnlaces, cahractersLimit) {
   console.log("Searching on google...")
   try {
     let resultados = [];
@@ -16,24 +14,32 @@ async function searchOnGoogle(query, numeroDeEnlaces) {
       try {
         const respuesta = await axios.get(enlace);
         const $ = cheerio.load(respuesta.data);
-        let contenidoPagina = $('main');
         let textoLimpio = ""
-        contenidoPagina.each((index, element) => {
+        let foundMarkup = ""
+        for (const markup of markups) {
+          let contenidoPagina = $(markup);
           textoLimpio = textoLimpio.concat(convert(contenidoPagina.html(), { wordwrap: false }))
-        });
+          if (textoLimpio.trim() !== "") {
+            foundMarkup = markup
+            break
+          }
+        }
         const resultado = textoLimpio.substring(0, cahractersLimit);
         if (resultado.trim() !== '') {
-          resultados.push(resultado)
-          console.log("  - Information getted from: " + enlace)
+          resultados.push({
+            result: resultado,
+            url: enlace
+          })
+          console.log("  - Information getted by '" + foundMarkup + "' from: " + enlace)
           cont++
           if (cont >= numeroDeEnlaces) {
             break
           }
         } else {
-          console.log("  - Can't get info from: " + enlace)
+          // console.log("  - Can't get info from: " + enlace)
         }
       } catch (error) {
-        console.log("  - Can't get info from: " + enlace)
+        // console.log("  - Can't get info from: " + enlace)
       }
     }
 

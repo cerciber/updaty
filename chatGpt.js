@@ -43,7 +43,6 @@ async function freeChatGPT(promt) {
             message: result
         }
     } catch (error) {
-        console.log(error)
         return {
             sucess: false,
             message: 'Error connecting to openai'
