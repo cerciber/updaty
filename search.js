@@ -2,8 +2,10 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const { convert } = require('html-to-text');
 
-async function searchOnGoogle(query, markups, numeroDeEnlaces, cahractersLimit) {
-  console.log("Searching on google...")
+async function searchOnGoogle(query, markups, numeroDeEnlaces, cahractersLimit, logs) {
+  if (logs) {
+    console.log("Searching on google...")
+  }
   try {
     let resultados = [];
 
@@ -30,7 +32,10 @@ async function searchOnGoogle(query, markups, numeroDeEnlaces, cahractersLimit) 
             result: resultado,
             url: enlace
           })
-          console.log("  - Information getted by '" + foundMarkup + "' from: " + enlace)
+          if (logs) {
+            console.log("  - Information getted by '" + foundMarkup + "' from: " + enlace)
+            // console.log("      - " + resultado)
+          }
           cont++
           if (cont >= numeroDeEnlaces) {
             break
@@ -60,13 +65,17 @@ async function obtenerEnlaces(query) {
   const respuesta = await axios.get(`https://www.google.com/search?q=${query}`);
   const $ = cheerio.load(respuesta.data);
   const enlaces = [];
+  enlaces.push(`https://www.google.com/search?q=${query}`);
 
   // Extraer enlaces de los resultados de búsqueda
   const a = $('a')
   $('a').each((index, elemento) => {
     const href = $(elemento).attr('href');
     if (href && href.startsWith('/url?q=')) {
-        enlaces.push(limpiarUrl(href.substring(7)));
+      const cleanURL = limpiarUrl(href.substring(7))
+      if (!cleanURL.startsWith('https://maps.google.com')) {
+        enlaces.push(cleanURL);
+      }
     }
   });
   return enlaces;
