@@ -13,8 +13,8 @@ async function getDataFromInternet({
     config  = {
         LIMIT_GOOGLE_RESULTS: 10,
         PAGE_CHARACTERS_LIMIT: 10000,
-        IA_ITERATIONS_PER_PAGE: 1,
-        IA_ITERATIONS_ON_BAD_FORMAT: 20,
+        IA_ITERATIONS_PER_PAGE: 2,
+        IA_ITERATIONS_ON_BAD_FORMAT: 50,
         LOGS: false,
         ...config
     }
@@ -57,7 +57,7 @@ async function getDataFromInternet({
         if (config.LOGS) {
             console.log("Getting conclusion...")
         }
-        let conclutionPrompt = "Sólo con base en las siguientes respuestas dame el resultado mas probable para '" + promt + "'\n\nSi no encuentras nada devuelve undefined \n\n Dame el resultado en el en un JSON como este \n\n { \"result\": \"" + format + "\" } \n\nSi no encuentras un resultado específico devuelve undefined en el return, no puedes poner nada mas en el return si no es el dato resultante solicitado."
+        let conclutionPrompt = "Sólo con base en las siguientes respuestas dame el resultado mas probable para '" + promt + "'\n\nSi no encuentras nada devuelve undefined \n\n Dame el resultado en el en un JSON como este \n\n { \"result\": " + format + " } \n\nSi no encuentras un resultado específico devuelve undefined en el return, no puedes poner nada mas en el return si no es el dato resultante solicitado."
         let cont = 1
         for (const responseChatGPT of responsesChatGPT) {
             conclutionPrompt += cont++ + ". " + responseChatGPT + "\n\n"
@@ -101,8 +101,9 @@ async function getDataFromInternet({
 // })
 
 getDataFromInternet({
-    search: 'Presidente de Colombia', 
-    promt: 'Primer Nombre del presidente actual de Colombia',
+    search: 'asesino de canserbero', 
+    promt: 'Quien mató a cancerbero?',
+    format: 'string del nombre del asesino',
     config: {
         LOGS: true
     }
